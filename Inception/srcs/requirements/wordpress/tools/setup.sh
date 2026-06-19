@@ -67,10 +67,28 @@ if ! wp core is-installed --allow-root >/dev/null 2>&1; then
                     --allow-root
 fi
 
-if ! wp user get "$WP_USER" --allow-root >/dev/null 2>&1; then
-    wp user create $WP_USER $WP_USER_EMAIL \
+wp option update home "https://$DOMAIN_NAME" --allow-root
+wp option update siteurl "https://$DOMAIN_NAME" --allow-root
+
+if wp user get "$WP_ADMIN_USER" --allow-root >/dev/null 2>&1; then
+    wp user update "$WP_ADMIN_USER" \
+                   --user_pass="$WP_ADMIN_PASSWORD" \
+                   --user_email="$WP_ADMIN_EMAIL" \
+                   --skip-email \
+                   --allow-root
+fi
+
+if wp user get "$WP_USER" --allow-root >/dev/null 2>&1; then
+    wp user update "$WP_USER" \
                    --role=author \
-                   --user_pass=$WP_USER_PASSWORD \
+                   --user_pass="$WP_USER_PASSWORD" \
+                   --user_email="$WP_USER_EMAIL" \
+                   --skip-email \
+                   --allow-root
+else
+    wp user create "$WP_USER" "$WP_USER_EMAIL" \
+                   --role=author \
+                   --user_pass="$WP_USER_PASSWORD" \
                    --allow-root
 fi
 
