@@ -1,0 +1,26 @@
+------------------------What is docker container--------------------------------------
+
+"Container is a running instance of an image, isolated and enhanced with its own state, processes, network, and filesystem layer."
+
+✅ How Does a Docker Container Work?
+		To simplify:
+			🔹 Docker Image = the recipe (instructions + ingredients)
+			🔹 Docker Container = the actual cooked dish (running instance)
+
+✅ This command: docker run nginx
+		Takes the nginx image
+		Creates a live instance = a container
+		Starts the web server inside
+
+✅ What Creates the Isolation in a Docker Container? (Going Deeper)
+	Containers use Linux kernel features to isolate environments:
+		🔸 1. Namespaces
+				Create a “private world” inside your system:
+				pid → separate process IDs
+				net → separate network interfaces
+				mnt → separate file systems
+				uts → separate hostnames
+				ipc → separate shared memory
+
+✅ Result?
+		Each container lives in its own world.

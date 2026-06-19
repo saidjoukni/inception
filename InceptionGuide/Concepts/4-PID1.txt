@@ -1,0 +1,73 @@
+-----------------------------Understanding PID 1 in Docker Containers-----------------------------------------------
+
+What is PID 1? : 
+	- In any operating system, processes are given unique ID numbers.
+	  The very first process that starts when a system boots up gets the ID number 1 (PID 1).
+	  This process is special!
+
+In a regular computer:
+	- PID 1 is usually called "init" or "systemd"
+	- It starts all other processes
+	- It's the "parent" of everything else running
+
+In a Docker container :
+	- PID 1 is whatever process you specify as your main command
+	- It works the same way - it's the first and most important process
+
+Why PID 1 Is Special in Docker
+	- The PID 1 process in a Docker container has two very important jobs :
+		1. Taking out the trash : It needs to "reap" zombie processes (clean up after processes that have finished)
+		2. Listening for shutdown signals : It needs to properly handle signals like SIGTERM (when someone tells the container to shut down)
+
+[lilmo3a9in]
+{
+	Let's take for example:   CMD ["nginx"]
+
+		Docker starts nginx as PID 1 at first ✅
+		But nginx, by default, runs in daemon mode:
+		It forks itself into the background.
+		The master nginx process becomes a child process (with a different PID).
+		Docker sees that the original PID 1 process exited when NginX forked itself ❌
+	
+	🔚 Result:
+		PID 1 (the main process) → exits after forking
+		Docker sees: “PID 1 is gone” → it stops the container
+		So nginx is not PID 1 anymore once it daemonizes
+}
+what is daemon mode : 
+				is when a program runs in the background as a service, without direct connection to the terminal or user session,
+				it's useful when you want the system to manage it silently.
+
+The Problem with Hacky Solutions
+
+	- When a Docker container is told to use commands like:
+		tail -f /dev/null
+		sleep infinity
+		while true; do sleep 1; done
+
+	- These create problems because:
+		1.tail -f /dev/null:
+		   - This command just watches an empty file forever  (/dev/null)
+		   - It's not designed to handle child processes
+		   - When Docker sends a shutdown signal, tail doesn't know what to do with it
+
+		2.sleep infinity:
+		   - This command just makes the process sleep forever
+		   - It can't respond to signals properly because it's sleeping!
+		   - Any child processes created will become zombies because sleep can't clean them up
+
+		3.while true;:
+		   - This is just a loop that does nothing useful
+		   - Like sleep, it can't handle signals or child processes properly
+
+What Should You Use Instead
+
+Instead of these hacky solutions, you should:
+	- Run your actual application as PID 1 if it's designed to handle signals.
+	- for example -> CMD	["nginx", "-g", "daemon off;"]
+
+This way, your container will:
+	- Clean up properly
+	- Shut down gracefully
+	- Handle signals correctly
+	- Manage resources efficiently

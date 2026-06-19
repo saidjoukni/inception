@@ -1,0 +1,42 @@
+--------------------- What is OpenSSL ? ------------------------
+
+OpenSSL is a toolkit used to manage TLS/SSL protocols.
+	TLS/SSL protocols are :
+		- Cryptographic protocols that ensure secure communication over a network.
+    	- They provide encryption, authentication, and data integrity between clients and servers (nginx).
+		[Lilmo3a9in]
+		{
+			TLS/SSL protocols = the rules and standards for secure communication.
+			OpenSSL = a software library that implements those rules so systems can actually use them.
+			TLS/SSL are just specifications (like blueprints), OpenSSL is the actual toolkit/library that:
+				Encrypts and decrypts data.
+				Generates and verifies certificates.
+				Handles the TLS handshake.
+				Provides openssl command-line tools to manage certificates, keys, CSRs, etc.
+		}
+It provides various tools to help manage and implement these protocols easily,
+all through a simple command-line interface (CLI). OpenSSL allows you to create CSRs (Certificate Signing Requests),
+install certificates, and much more.
+
+--------------------- Why we need to use OpenSSL? ------------------------
+
+We need to use OpenSSL because the project requires you to configure NGINX with TLSv1.2 or TLSv1.3,
+and that means you need SSL/TLS certificates. OpenSSL is the standard tool used to generate these certificates.
+Then of course we need to create this path /etc/nginx/ssl, why?
+this is the path where you will store your SSL/TLS certificate and private key files for NGINX
+because NGINX needs access to both the certificate and the key to enable HTTPS (TLSv1.2 or TLSv1.3).
+
+--------------------- What is an SSL certificate? ------------------------
+
+An SSL certificate is a digital file that proves the identity of a website and allows it to use HTTPS (secure connection).
+	📂 It’s actually made up of two files:
+		1-Private Key (kept secret) → used to encrypt and decrypt data.
+		2-Certificate File			→ shared with browsers, used to verify identity and start secure communication.
+	🔄 How does it work (simplified)?
+		1-When you visit https://your-site.com, the browser asks for the certificate.
+		2-The server sends the certificate file.
+		3-The browser checks if it’s trusted (signed by a known Certificate Authority).
+		4-If valid, a secure connection is established using the key.
+	🔐 what is a self-signed SSL certificate :
+		A self-signed SSL certificate is an SSL certificate that is created and signed by you,
+		not by a trusted Certificate Authority (CA) like Let's Encrypt or DigiCert.

@@ -1,0 +1,97 @@
+__________________________________________________________________________________
+[subject : •    For performance matters,
+				the containers must be built either from the penultimate stable
+				version of Alpine or Debian. The choice is yours.
+________________________________________________________________________________
+
+> Step 1: Choosing the Base Image
+		like nginx.
+
+---------dockerfile--------------
+
+FROM	debian:bullseye
+___________________________________________________________________________________
+
+[subject :	•A Docker container that contains MariaDB only without nginx.
+___________________________________________________________________________________
+
+before starting with Step1 we need to know why we must use "MariaDB only without nginx".
+
+		The instruction "MariaDB only without nginx" means that the MariaDB container must run only the database service and should not include or depend on NGINX in any way.
+		This is not just to simplify the setup, but for deeper architectural and technical reasons that follow Docker and DevOps best practices.
+
+		First, each container must follow the principle of separation of concerns.
+		This means every service should have one responsibility only.
+		MariaDB is responsible for managing the database, NGINX is responsible for handling incoming HTTP traffic as a reverse proxy,
+		and WordPress handles the application logic through PHP-FPM.
+		Keeping services separated ensures better maintainability and modularity.
+
+		Second, security is a major factor. If you include NGINX inside the MariaDB container,
+		you create an unnecessary network path to the database from outside the system,
+		which increases the risk of exposure. In a secure design,
+		NGINX should be the only container exposed to the host through port 443.
+		All other containers should be isolated and only reachable through the internal Docker network.
+
+> Step 2:	Update apt and install (mariadb-server)
+			Of course, we need to install mariadb server.
+
+---------dockerfile----------------------------------------
+
+	...
+
+RUN		apt update -y && apt install mariadb-server -y
+__________________________________________________________
+
+after mariadb installation we need to configure it depending on the subject so :
+		First, we get the default configuration file from online.
+		Let's configure it :
+			just add : 'port = 3306' under Basic Settings
+		Why? :
+			This lets the Wordpress container communicate with MariaDB specifically through the port 3306 (as per subject requirement)
+
+> Step 3:  copy the config file from our local build context into the Docker image.
+		like nginx.
+
+---------dockerfile--------------------------------------------------
+
+	...
+
+COPY	conf/50-server.cnf	/etc/mysql/mariadb.conf.d/50-server.cnf 
+____________________________________________________________________
+
+now we need to use mariadb to create a database :
+	let's use a bash script to do that easily.
+For detailed instructions on how, go to : mariadb/2-Script.txt
+
+then:
+
+> Step 4 : copy the init_db.sh script file from our local build context into the Docker image
+
+---------dockerfile--------------------------------------------------
+
+	...
+
+COPY	tools/init_db.sh	/
+____________________________________________________________________
+
+> Step 5 : chmod init_db.sh to  755
+
+	[lilmo3a9in](hadi rah bayna bla mangolha)
+
+---------dockerfile--------------------------------------------------
+
+	...
+
+RUN 	chmod 755 init_db.sh
+____________________________________________________________________
+
+> Step 6 :	run the script in the forground
+			it's like nginx but in mariadb container we must run
+			the script to start mariad as PID1.
+
+---------dockerfile--------------------------------------------------
+
+	...
+
+CMD 	["bash", "init_db.sh"]
+______________________________________________________________________

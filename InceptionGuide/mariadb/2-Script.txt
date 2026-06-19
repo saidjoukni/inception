@@ -1,0 +1,68 @@
+--------------------------------------- init_db.sh Script -----------------------------------------
+
+	This script prepares our MariaDB container to be used by Wordpress.
+	It starts the mariadb service in the background, creates our Database, our User, and grants the User all privileges of the Database.
+	Then the script Flushes the privileges to reload them, then shuts down the service to re-run it as a Daemon in the foreground.
+
+------------------------------------- Why use this script ? ---------------------------------------
+
+	Wordpress NEEDS a Database to store Site content, Configuration and user data. When setting up Wordpress, we specify which Database it is going to use.
+	This script is ran to create the database and have it ready to be used by Wordpress.
+
+----------------------------------- Step-by-Step Description: -------------------------------------
+
+	service mariadb start;
+		We start the mariadb service in the background to execute the next commands.
+
+	sleep 3
+		We sleep for 3 seconds to allow the mariadb service to boot. This is to be sure that the service is ready when we run the next commands.
+
+	mysql -e "CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;"
+		mysql -e : call mysql and (-e)xecute the following statement.
+		CREATE DATABASE statement is the command
+		IF NOT is a check to see if the next operator returns FALSE
+		EXISTS is an operator that returns TRUE if the subquery [[Lilmo3a9in]{query = istifsar} target exists, FALSE if not.
+		`${MYSQL_DATABASE}` expands to the name of our Database we set in .env file.
+		; is used to specify the end of MySQL Statements [[Lilmo3a9in]{nihaya d lcommand}.
+
+	mysql -e "GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO \`${MYSQL_USER}\`@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';"
+		This line grants the ${MYSQL_USER} All privileges on ALL the Tables of ${MYSQL_DATABASE}.
+		If the ${MYSQL_USER} did not previously exist, it creates it.
+		GRANT statement is the command
+		ALL PRIVILEGES specifies that we want to grant all the privileges
+		ON \`${MYSQL_DATABASE}\`.* specifies which tables of which database.
+			    _____/          | \_______
+		       v	            v        v
+		Database Name       accessor    Wildcard for ALL tables		[[Lilmo3a9in]{b7al struct wlla class kandirou . bach ndekhlou l members}
+		TO \`${MYSQL_USER}\`@'%' IDENTIFIED BY '${MYSQL_PASSWORD}' Is the user who will get the privileges, and his Password
+		@'%' specifies the host that the user must be connected from. Here the host is the wildcard '%' which means from anywhere within the Docker Network
+					`${MYSQL_USER}`@'%'
+						_____/     |  \_______
+						v	       v     	 v
+					username   separator    Wildcard for ALL hosts
+	mysql -u root -p${MYSQL_ROOT_PASSWORD} -e "FLUSH PRIVILEGES;"
+		We change to a root user and execute FLUSH PRIVILEGES to 'reboot' the permissions table. Not necessary but good Practice.
+		mysql -u root : We specify that we plan on running a command as the (-u)ser Root, who uses the (-p)assword ${MYSQL_ROOT_PASSWORD}
+		-e "FLUSH PRIVILEGES;" : we (-e)xectute "FLUSH PRIVILEGES" which reloads the GRANT tables.
+
+	mysqladmin -u root -p${MYSQL_ROOT_PASSWORD} shutdown
+		Send a shutdown signal to the MariaDB server as Root.
+		Here we use mysqladmin to send the signal, not mysql.
+		mysql is for SQL queries, mysqladmin is for server control commands.
+		Example : to add or delete a Database or User, this is a query and we use mysql.
+				  to Shut down or reboot the server, this is a server command and we use mysqladmin.
+		mysqladmin -u root -p${MYSQL_ROOT_PASSWORD} : same as previous command, except with mysqladmin
+		shutdown : Sends a shutdown signal to the server.
+	
+	exec mysqld_safe
+		Start the MariaDB server as a daemon in the foreground.
+		We use the _safe version, which is a wrapper script [[Lilmo3a9in]{b7al taba9at 7imaya} because this is optimal for Docker containers :
+			It starts with extra safety featues.
+			Monitors the server process and restarts it automatically if it crashes.
+			Sets up Logging. [[Lilmo3a9in]{ay 7aja we93at kat loga f wa7ed text file}
+
+-------------------------------------- What Happens Next ? ----------------------------------------
+
+Now the MariaDB container is continuously running in the foreground as a daemon.
+It is now ready to serve requests from Wordpress, who will connect to the created Databse as the created User and store its Site Data in the database.
+If something happens or the server crashes, it logs the crash / error and reboots automatically.

@@ -1,0 +1,53 @@
+✅ What is a Docker Image?
+        A Docker Image is like a snapshot of an app and everything it needs to run,
+		including:
+        	the app code
+        	the system libraries
+        	dependencies (like Nginx, Python, Node...)
+        	environment settings
+    	It’s a read-only template used to create containers.
+
+✅ Think of it like this:
+        A Docker Image is like a frozen cake recipe it's already prepared.
+NOTE: Learn what a docker container is to continue this part of guide
+        A Docker Container is like baking the cake from that recipe, it's running.
+        You can use the same image to create 1, 10, or 100 containers, all based on the same setup.
+
+✅ First: What is a Docker Image at a Low Level?
+        A Docker Image is not just a nice file with code and config like people say, it's really:
+
+        A filesystem tree built [limo3a9in](https://andysbrainbook.readthedocs.io/en/latest/_images/UnixTree1.png) as a stack of layers, where each layer only includes the changes (additions, deletions, or modifications) compared to the layer before it, and the metadata describes how to assemble these layers to build a container.
+
+✅ Low-Level Technical Details:
+        1. Layers = compressed tarballs
+                Each layer in a Docker image is:
+                    A tar.gz archive (or just a tar file, then compressed).
+                    It contains files/changes (add, modify, delete).
+                    Includes metadata like layer.tar, maybe VERSION, json, and checksum.
+                    These layers are stacked from the base to the top.
+
+        2. Union Filesystem
+                To combine the layers, Docker uses:
+                    UnionFS (like overlayfs in Linux).
+                    This system merges all layers into a single virtual filesystem and gives:
+                    read-only layers (from the image).
+                    then a read-write layer gets added when you do docker run.
+
+        3. Image Metadata
+                Each image contains:
+                    manifest.json: describes the order of layers and what’s in them.
+                    config.json: defines env vars, default command, entrypoint, user, etc.
+                    repositories file (sometimes), which maps aliases/tags.
+
+        4. Image Hash = Content Addressable
+                Each layer has a hash (sha256) based on its actual contents.
+                Meaning:
+                    If the same layer is reused in many images, Docker doesn't re-download or re-store it. = Reusability
+
+        5. Image ≠ Container
+                The image is:
+                    Static
+                    Read-only
+                The container:
+                    Runs on top of the image with a read-write layer (copy-on-write).
+                    Any changes made don’t affect the original image.

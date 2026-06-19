@@ -1,0 +1,97 @@
+-------------------------- What is a Docker Volume ? ---------------------------
+
+A Volume is a Docker-managed storage location, portable, safe, and recommended for most persistent data..
+Docker manages the storage location (usually stored under /var/lib/docker/volumes/ ). You only need to reference the volume name in your Compose file.
+Best for persistent data that should be managed by Docker, portable between hosts, and not tied to a specific host path.
+[Lilmo3a9in]{Volume khzana kayna fl PC dial Host, kana3tiwha ll Container bach ykhezzen Data w teb9anna wakha mayb9ach l container}
+
+---------------------------- What is a Bind Mount ? ----------------------------
+
+A bind mount is when you map a specific directory or file from your host machine directly into a container.
+You specify the exact host path (e.g., /home/login/data) and the container path (e.g., /wordpress).
+Any changes in the container are reflected on the host, and vice versa.
+This is useful for development, sharing config files, or persisting data in a specific host location.
+
+------------------------ Bind Mount vs. Docker Volumes: ------------------------
+
+/-----------------+-----------------------------------+------------------------------------\
+|     Feature     |            Bind Mount             |           Docker Volume            |
++-----------------+-----------------------------------+------------------------------------+
+| Storage Path    | You specify the host path         | Docker manages the path            |
+| Portability     | Not portable (host-specific path) | Portable (Docker handles location) |
+| Management      | You manage files/directories      | Docker manages everything          |
+| Use Case        | Dev, config, host-specific data   | Persistent app data, portability   |
+| Backups         | Manual                            | Easier with Docker tools           |
+\-----------------+-----------------------------------+------------------------------------/
+
+-------------------------- What is a Docker Driver ? ---------------------------
+
+In Docker, a driver is a plugin or module that determines how a resource is managed.
+For volumes, the driver specifies how and where Docker creates, manages, and stores your volume data.
+local is the default, which stores data on the host filesystem, but you can use others for networked or cloud storage.
+
+-------------------------- Our Volume Configuration: ---------------------------
+
+(We will consider this configuration as a Wordpress configuration. This is just an example, and also works for MariaDB)
+
+driver: local
+	This tells Docker to use the local volume driver.
+	The local driver stores data on the host filesystem (your computer).
+	It’s the default driver for Docker volumes.
+
+driver_opts
+	This section allows you to pass options to the volume driver.
+	With the local driver, you can use options to customize how and where the data is stored.
+	Elements inside driver_opts:
+		type	: Specifies the type of mount to use for the volume.
+		o		: Stands for "options". Specifies mount options, which depend on the type.
+		device	: Specifies the path to the device or directory to mount.
+
+	Our Volume Configuration:
+		type: 'none' 
+			Tells Docker not to use a special filesystem type.
+			Used when you want to bind-mount a directory from the host.
+
+		o: 'bind'
+			The o stands for “options”.
+			'bind' means you want to bind-mount a directory from your host into the container, rather than using Docker’s managed volume storage.
+
+		device: '/home/login/data/wordpress'
+			This is the path on your host machine that will be mounted into the container.
+			The value is the host path where your data physically lives on your computer.
+			The container will see /var/www/wordpress, but the data is actually stored at /home/login/data/wordpress on your host.
+			Inside the container, this path is mounted to the path you specify in the 'volumes:' section under each service.
+
+This configuration makes Docker mount the host directory /home/login/data/wordpress into the container, using the local driver with bind options, so data persists on your host and is accessible outside Docker.
+
+---------------- (Optional) Other Volume Configuration Options: ----------------
+
+(Most of these configurations are advanced and not necessary to learn, but it's good to know them)
+
+Other volume driver values besides "local":
+	local			:	Stores data on the local host (default).
+	nfs				:	Stores data on a remote NFS server.
+	azurefile		:	For Azure File Storage.
+	cloudstor		:	For cloud storage (AWS, Azure, GCP).
+	flocker			:	For cluster-wide volumes.
+	glusterfs		:	For GlusterFS distributed storage.
+	vSphere			:	For VMware vSphere storage.
+	custom plugins	:	You can install third-party or custom volume drivers.
+	Note:
+		Most advanced drivers (like nfs, azurefile, etc.) require extra configuration and may need Docker plugins to be installed.
+
+Other volume driver option values
+1. type
+	'none'	: Used for bind mounts (mounts a directory or file from the host).
+	'tmpfs'	: Linux Only. Mounts a temporary filesystem in memory (data is lost when the container stops).
+	'nfs'	: Mounts a directory from a remote NFS server (requires NFS support).
+2. o
+	'bind'				: Used with type: 'none' for bind mounts.
+	'uid=1000,gid=1000'	: Set ownership for the mount (useful for tmpfs or nfs).
+	'size=100m'			: Limit size (useful for tmpfs).
+	'rw' or 'ro'		: Mount as read-write or read-only.
+	Multiple options can be comma-separated: 'bind,ro'
+3. device
+	For type: 'none' and o: 'bind'	: Path to a directory or file on the host.
+	For type: 'tmpfs'				: Not required (can be omitted).
+	For type: 'nfs'					: Path to the NFS share, e.g. 'nfs-server:/path/to/share'.

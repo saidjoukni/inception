@@ -1,0 +1,24 @@
+After OS (Debian) Installation :
+
+1 - add the user to sudo : usermod <login> -aG sudo  THEN YOU MUST REBOOT
+2 - generate your SSH key		: ssh-keygen
+3 - Install the following		:
+						ZSH		: sudo apt install zsh
+						curl	: sudo apt install curl
+						Git		: sudo apt install git
+						OhMyZsh : sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+4 - Set ZSH as Default Shell	: chsh -s $(which zsh) THEN YOU MUST RELOG
+5 - Installing VS Code			:
+						- Go to https://code.visualstudio.com/ and Download the .deb File
+						- cd into where you downloaded
+						- run : sudo dpkg -i <package_name.deb>
+						- Select YES if prompted
+6 - Installing Docker-Engine	:
+						- In the Terminal, run : 'curl -k https://get.docker.com/ > docker.sh'
+						- run : bash docker.sh
+						- sudo usermod -aG docker <login> THEN YOU MUST REBOOT
+						- After reboot, run : docker ps     to check if it worked
+7 - Setting up for Compose		:
+						- create the 2 directories : /home/login/data/wordpress/
+													 /home/login/data/mariadb/
+						- own them : sudo chown -R $USER:$USER /home/$USER/data

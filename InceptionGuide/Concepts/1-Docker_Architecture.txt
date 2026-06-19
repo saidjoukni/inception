@@ -1,0 +1,89 @@
+-----------------------------------------Docker Architecture-----------------------------------------
+
+
+Docker uses a client-server architecture with multiple layered components that work together to create and manage containers.
+Each component has specific responsibilities in the containerization process.
+
+                    🌟 Overview 🌟
+   ┌─────────────────────────────────────────────────┐
+   │     Docker's Layered Architecture               │
+   └─────────────────────────────────────────────────┘
+
+		┌─────────────────────────────────┐
+		│        🖥️  Docker CLI           │ ──┐
+		│    (docker run, build, pull)    │   │ REST API
+		└─────────────────────────────────┘   │ 🌐
+		                                      ▼
+		┌─────────────────────────────────┐   
+		│        🧠 Docker Daemon         │ ──┐
+		│        (dockerd engine)         │   │ gRPC
+		└─────────────────────────────────┘   │ 📡
+		                                      ▼
+		┌─────────────────────────────────┐
+		│        📦 containerd            │ ──┐
+		│   Container Runtime Manager     │   │ OCI
+		└─────────────────────────────────┘   │ 📋
+		                                      ▼
+		┌─────────────────────────────────┐
+		│         ⚙️  runc                │ ──┐
+		│    Low-level Container Runtime  │   │ Syscalls
+		└─────────────────────────────────┘   │ 💻
+		                                      ▼
+		     🐧 Linux Kernel Features
+		    (namespaces, cgroups, etc.)
+
+╔════════════════════════════════════════════════╗
+║             Component Breakdown                ║
+╚════════════════════════════════════════════════╝
+
+🖥️ Docker CLI
+├── 📝 Command parsing & validation
+│   └── Syntax checking, parameter validation
+├── 🔐 Authentication handling
+│   └── User credentials, registry auth
+├── 🌐 API communication
+│   └── REST API calls, response handling
+└── 📊 Output formatting
+    └── JSON/YAML parsing, pretty printing
+
+🧠 Docker Daemon
+├── 🎮 Container orchestration
+│   └── Lifecycle management, scheduling
+├── 📦 Image management
+│   └── Layer caching, image building
+├── 🌐 Network configuration
+│   └── DNS, port mapping, overlay networks
+├── 💾 Volume handling
+│   └── Persistent storage, bind mounts
+└── 🔒 Security controls
+    └── Access control, capabilities
+
+📦 containerd
+├── 🔄 Container lifecycle
+│   └── Create, start, stop, delete
+├── 📥 Image operations
+│   └── Pull, push, layer management
+├── 💾 Storage management
+│   └── Snapshots, content addressing
+├── 🔌 Plugin architecture
+│   └── Runtime plugins, storage drivers
+└── 👥 Multi-tenant support
+    └── Namespace isolation
+
+⚙️ runc
+├── 🔒 Process isolation
+│   └── Namespace creation & management
+├── 📊 Resource control
+│   └── cgroups configuration
+├── 🗃️ Filesystem setup
+│   └── rootfs, overlay mounts
+├── 🔐 Security features
+│   └── Capabilities, seccomp, AppArmor
+└── 💻 Kernel interaction
+    └── System calls, resource allocation
+
+Communication Flow:
+-----------------
+CLI ⟶ REST API ⟶ Daemon ⟶ gRPC ⟶ containerd ⟶ OCI ⟶ runc ⟶ Linux Kernel
+
+-->> For more details, go to 1a-Communications_Flow.txt

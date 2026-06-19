@@ -1,0 +1,180 @@
+________________________________________________________________________________
+
+[subject : •	A Docker container that contains WordPress + php-fpm (it must be installed and configured) only without nginx
+________________________________________________________________________________
+
+> step 1 :  Choosing the Base Image
+			like nginx.
+
+---------dockerfile--------------------------------------------------
+	FROM	debian:bullseye
+______________________________________________________________________
+
+
+> step 2 : Setting up PHP and Database Environment
+
+	apt install -y wget php php-fpm php-mysql mariadb-client
+	
+			-----------What Does This Do?--------------
+
+set up a basic PHP and MySQL setup inside the container, which WordPress needs to run. Without it,
+WordPress won’t work or talk to the database, because it needs PHP to run its code and MySQL to store and read data.
+
+
+			-----------What Are We Installing?-----------
+
+1. wget
+	Command-line tool for downloading files from the internet.
+	Used in our Dockerfile to download WordPress and WP-CLI.
+
+2. php
+	The PHP programming language interpreter.
+	Runs WordPress and any PHP scripts on our server.
+
+3. php-fpm
+	PHP FastCGI Process Manager; manages PHP processes for better performance.
+	Handles multiple PHP requests efficiently, required for serving PHP sites like WordPress.
+
+4. php-mysql
+	PHP extension for connecting PHP to MySQL/MariaDB databases.
+	Allows WordPress (PHP) to communicate with the MariaDB database.
+
+5. mariadb-client
+	Command-line tools for connecting to and managing MariaDB/MySQL databases.
+	Used in scripts to check database availability and perform administrative tasks.
+
+				---------Real-World Example-----------
+				  [LILMO3A9IN PRO MAX ULTIMATE PLUS]
+{
+Imagine you're setting up a kitchen:
+	- PHP is like your chef (they know how to cook)
+	- PHP-FPM is like having multiple cooking stations
+	- PHP-MySQL is like knowing how to use the refrigerator
+	- MariaDB-client is like having the keys to the pantry
+	- wget is like having someone who can go shopping for ingredients
+} 
+
+
+---------dockerfile-----------------------------------------------------------------------
+	...
+
+	RUN		apt update -y && apt install -y wget php php-fpm php-mysql mariadb-client
+__________________________________________________________________________________________
+
+> step 3 : Download WordPress source
+	This command downloads the WordPress 6.8.1 archive from the official website using wget and saves it to the /var/www directory during the Docker image build process.
+
+---------dockerfile--------------------------------------------------------
+	...
+
+	RUN		wget https://wordpress.org/wordpress-6.8.1.tar.gz -P /var/www
+__________________________________________________________________________
+
+> Step 4 : Extract WordPress and clean up
+
+let's Unpack WordPress archive : 
+
+cd /var/www :					Changes the working directory to /var/www where the archive file is located.
+
+tar -xzf wordpress-6.8.1.tar.gz :	Extracts the contents of the wordpress-6.8.1.tar.gz file.
+
+
+Detailed breakdown of -xzf:
+
+	-x → Extract files from the archive.
+
+	-z → Uncompress the archive using gzip (because .tar.gz is a gzipped tarball).
+
+	-f → File name to use, in this case: wordpress-6.8.1.tar.gz.
+
+So, tar -xzf means: "Extract this gzipped tar archive file.
+
+rm wordpress-6.8.1.tar.gz : Deletes the archive file after extracting it, to keep the image clean and save space.
+
+---------dockerfile-----------------------------------------------------------------------
+	...
+
+	RUN 	cd /var/www && tar -xzf wordpress-6.8.1.tar.gz && rm wordpress-6.8.1.tar.gz
+__________________________________________________________________________________________
+
+> Step 5: Set permissions for WordPress files
+
+why?
+	because When you extract WordPress files, their default permissions might not allow the web server to :
+		Read the files (to serve pages)
+		Execute PHP scripts
+		Access directories
+
+---------dockerfile------------------------
+	...
+
+RUN		chmod -R 755 /var/www/wordpress
+___________________________________________
+
+> Step 6 : copy the config file from our local build context into the Docker image.
+		like nginx.
+
+The only modification that was made to this file compared to the default PHP-FPM www.conf file is the addition of this line :
+		listen = wordpress:9000
+By setting listen = wordpress:9000, you tell PHP-FPM to listen on TCP port 9000 on the hostname 'wordpress'.
+We did this so that PHP-FPM can accept PHP requests over the network on port 9000, making it accessible to other containers or services (in our case: Nginx), not just locally.
+
+---------dockerfile--------------------------------------
+	...
+
+COPY 	conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
+_________________________________________________________
+
+> Step 7 : Download WP-CLI tool
+we must download "WP-CLI"
+	This is the official WP-CLI (WordPress Command Line Interface) .phar (PHP archive) file.
+	It's a command line tool that lets you manage WordPress installations using commands (e.g. install plugins, update WordPress, configure settings, etc.).
+	Normally, to configure a Wordpress page, you have to manually complete the Setup Page in your browser. We can't do this, the page has to be set up without interaction.
+	WP-CLI allows us to complete the configuration from the Command Line without interacting with the setup screen ourselves. 
+	It's downloaded as a .phar (PHP archive) file that can be executed using PHP.
+
+---------dockerfile-------------------------
+	...
+
+RUN		wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+___________________________________________
+
+> Step 8 : Make WP-CLI executable
+
+---------dockerfile------------
+	...
+
+RUN		chmod 755 wp-cli.phar
+_______________________________
+
+> Step 9 : Make WP-CLI  globally accessible
+	let's Move WP-CLI to system path as 'wp' because :
+		When you type a command like wp, the system looks for it in all directories listed in the $PATH variable.
+		/usr/local/bin is almost always included in $PATH by default for all users.
+
+to run WP-CLI we can type wp instead of ./wp-cli.phar
+
+---------dockerfile------------------------
+	...
+
+RUN		mv wp-cli.phar /usr/local/bin/wp
+___________________________________________
+
+then we create a bash script for automatically sets up WordPress (configures it, creates  users) after confirming MariaDB is ready, then starts PHP-FPM.
+For detailed instructions on how, go to : wordpress/2-Script.txt
+
+> Step 10 : copy the wpconfig.sh script file from our local build context into the Docker image
+
+---------dockerfile-----------
+	...
+
+COPY 	tools/wpconfig.sh /
+_____________________________
+
+> Step 11 : run the script in the forground
+
+---------dockerfile---------------
+	...
+
+CMD		["bash", "wpconfig.sh"]
+__________________________________

@@ -1,0 +1,62 @@
+-------------------------- What is Docker Compose ? ---------------------------
+
+Docker Compose is a tool that allows you to define, configure, and manage multi-container Docker applications using a simple YAML file (docker-compose.yml).
+In this YAML file, You can configure all your application’s services, networks, and volumes in one place, making it easy to build, start, and stop complex environments with a single command.
+This makes development, testing, and deployment fast and easy by automating the organization of multiple interconnected containers.
+
+-------------------- What is a 'docker-compose.yml' File ? --------------------
+
+This is the file that is used by Docker Compose to define and manage multi-container Docker applications.
+In this file, you specify all the services (containers), networks, and volumes your application needs, along with their configuration and relationships.
+The docker-compose.yml file acts as a blueprint[Lilmo3a9in]{mokhattat} for your application’s environment, allowing you to easily build, run, and orchestrate complex setups with a single command.
+
+----------------------- Why do we need Docker Compose ? -----------------------
+
+Imagine having to create a large Docker application with 20 containers, multiple networks, and 10 volumes—all manually through command-line instructions.
+Managing each container’s configuration, assigning them to the correct networks, and attaching the right volumes would quickly become overwhelming.
+This manual process would not only be time-consuming and error-prone, but also make debugging and maintaining the environment much more difficult.
+Docker Compose solves these problems by letting you define everything in a single, organized YAML file.
+
+------------------ Structure of a 'docker-compose.yml' File -------------------
+
+Our Docker Compose file is composed of THREE main parts called "Top-Level Elements" : services, volumes & networks.
+Each top-level element is a Map, and each sub-element is a key/value pair.
+
+services :	This element contains all the settings and configurations related to the images and their containers.
+			In our case, that would be : mariadb, wordpress & nginx.
+			Each service is designated in the compose file by its name.
+
+volumes	 :	This element contains all the volumes that will be created, mounted and used by the services
+			In our case, we need two Volumes : mariadb & wordpress.
+
+networks :	This element contains the Docker Networks that will be used by our containers.
+			In our case, we only need ONE as our main Docker Network : inception
+
+--------------------------- Sub-Element Attributes: ---------------------------
+
+services:										              // Top-Level Element : Services
+	<service_name>:								          // Name of the Service
+		container_name: <container_name>			// What to name the Container
+		env_file: <env file path>					    // Path to the environment variable file
+		build: <./path/to/Dockerfile>				  // Path to the image's Dockerfile
+	image: <image_name>							        // Name of the Image
+		networks:									            // Which Networks this Container will be part of
+			- <network_name>							      // Network Name
+		volumes:									            // Which Volumes will this Container have access to
+			- <volume_name>:/path/to/storage		// Path where the service will store its files within the Volume
+		ports:										            // Ports that will be exposed
+			- "xxxx"									          // Formatted as "xxxx" for the open port between containers only
+																					// Formatted as "xxxx:yyyy" if they also include the host's (yyyy) port
+		restart: always								        // Force a Restart if the service fails
+
+volumes:										              // Top-Level Element : Volumes
+	<volume_name>:								          // Name of the Volume
+		driver: local								          // Specify which Volume Driver to use
+		driver_opts:								          // Driver Options :
+			type: 'none'								        // Specifies type of Mount, here it's 'none' for Bind mounts (see next option)
+			o: 'bind'									          // 'o' Stands for 'options'. 'bind' is used with the 'none' type for bind mounts
+			device: '/path/to/volume/onhost'		// Path to where Volume Data is stored on the host
+
+networks:										              // Top-Level Element : Networks
+	<network_name>:								          // Name of the Network in the Docker Compose file
+	name: <network_name>						        // Name of the Network in Docker

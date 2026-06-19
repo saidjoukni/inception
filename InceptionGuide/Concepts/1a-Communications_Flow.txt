@@ -1,0 +1,68 @@
+🐳 Docker Communication Flow - Detailed Explanation
+
+CLI ⟶ REST API ⟶ Daemon ⟶ gRPC ⟶ containerd ⟶ OCI ⟶ runc ⟶ Linux Kernel
+
+1. CLI (Command Line Interface)
+   • User-facing command tool
+   • Accepts commands like: docker run, build, pull, push
+   • Translates human commands into API calls
+   • Handles command validation and formatting
+   • Provides feedback and error messages
+
+2. REST API (Representational State Transfer Application Programming Interface)
+   • HTTP-based communication protocol
+   • Handles client-server interaction
+   • Uses JSON for data exchange
+   • Supports authentication and encryption
+   • Enables remote Docker management
+
+3. Daemon (dockerd)
+   • Core Docker engine service
+   • Manages container lifecycle
+   • Handles image building and storage
+   • Controls networking and volumes
+   • Implements security policies
+   • Orchestrates all Docker components
+
+4. gRPC
+   • High-performance RPC framework
+   • Binary protocol (more efficient than REST)
+   • Supports streaming data
+   • Enables bidirectional communication
+   • Used between daemon and containerd
+
+5. containerd
+   • Container runtime manager
+   • Manages container lifecycle
+   • Handles image pull/push
+   • Controls container execution
+   • Manages container storage
+   • OCI-compliant implementation
+
+6. OCI (Open Container Initiative)
+   • Industry standard specifications
+   • Runtime specification
+   • Image format specification
+   • Distribution specification
+   • Ensures container portability
+   • Standardizes container operations
+
+7. runc
+   • Low-level container runtime
+   • Creates container processes
+   • Implements OCI specifications
+   • Manages system resources
+   • Handles container isolation
+   • Interacts directly with kernel
+
+8. Linux Kernel Features
+   • Namespaces (isolation)
+     - PID (Process)
+     - NET (Network)
+     - IPC (Inter-Process Communication)
+     - MNT (Mount)
+     - UTS (Unix Timesharing System)
+     - USER (User IDs)
+   • Cgroups (resource control)
+   • Capabilities (permission control)
+   • Security modules (SELinux/AppArmor)

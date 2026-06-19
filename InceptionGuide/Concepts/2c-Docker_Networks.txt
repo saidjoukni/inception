@@ -1,0 +1,15 @@
+What is a Docker Network ?
+	A Docker Network is a virtual environment where member Containers
+	can communicate with each other and other external systems (If the Network Allows it by Mapping the necessary Ports). 
+	This helps in isolating and securing Containers while also having control over how they can interact with other systems both in and out of the Network
+
+What are the different kinds of Docker Networks ?
+	Docker has by default three running networks : Bridge, Host and None
+		Bridge	: When a new container runs, it is automatically attributed to the Bridge Network (unless you specify another network manually).
+					Containers on the same Bridge can communicate with each other, but not with other networks.
+		Host	: Containers use the Host's network and IP.
+		None	: The Container does not belong to ANY Network and is basically isolated.
+
+What is Port Mapping ?
+	Docker allows containers to interact and communicate with other networks and external systems via Port Mapping. It allows you to expose a Container's ports to the Host's ports.
+	This is required by containers running Webservers and other similar network services.

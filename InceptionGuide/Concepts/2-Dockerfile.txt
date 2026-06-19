@@ -1,0 +1,231 @@
+========================================================================
+                    DOCKERFILE INSTRUCTIONS
+========================================================================
+
+This document presents the essential Dockerfile instructions used to build
+Docker images and define container behavior.
+
+------------------------------------------------------------------------
+
+███████╗██████╗  ██████╗ ███╗   ███╗
+██╔════╝██╔══██╗██╔═══██╗████╗ ████║
+█████╗  ██████╔╝██║   ██║██╔████╔██║
+██╔══╝  ██╔══██╗██║   ██║██║╚██╔╝██║
+██║     ██║  ██║╚██████╔╝██║ ╚═╝ ██║
+╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝
+
+SYNTAX: FROM <image_name>[:tag]
+
+PURPOSE:
+  Specifies the base image to build the new image from.
+  This image usually includes a minimal OS and may come with pre-installed
+  tools or environments (e.g., Python, Node.js, etc.).
+
+DETAILS:
+  • ALWAYS the first instruction in the Dockerfile (with rare exceptions)
+  • Sets the foundation for all subsequent layers
+  • Can specify a specific version using tags
+
+EXAMPLE:
+  FROM python:3.11-slim
+
+EXPLANATION:
+  This starts from a slim image of Python 3.11 with a lightweight OS.
+  All other instructions will build upon this base image.
+
+------------------------------------------------------------------------
+
+
+██████╗  ██╗   ██╗ ███╗   ██╗
+██╔══██╗ ██║   ██║ ████╗  ██║
+██████╔╝ ██║   ██║ ██╔██╗ ██║
+██╔══██╗ ██║   ██║ ██║╚██╗██║
+██║  ██║ ╚██████╔╝ ██║ ╚████║
+╚═╝  ╚═╝  ╚═════╝  ╚═╝  ╚═══╝
+
+SYNTAX: RUN <command>
+
+PURPOSE:
+  Executes a command inside the image during the build stage.
+  The result of the command becomes a new layer in the final image.
+
+DETAILS:
+  • Creates permanent changes in the image
+  • Each RUN instruction creates a new layer
+  • Best practice: Chain related commands with && to reduce layers
+
+EXAMPLE:
+  RUN apt-get update && apt-get install -y curl
+
+EXPLANATION:
+  This runs the command while building the image and keeps the result permanently.
+  Both commands execute in a single layer, optimizing the image size.
+
+------------------------------------------------------------------------
+
+
+ ██████╗ ███╗   ███╗ ██████╗
+██╔════╝ ████╗ ████║ ██╔══██╗
+██║      ██╔████╔██║ ██║  ██║
+██║      ██║╚██╔╝██║ ██║  ██║
+╚██████╗ ██║ ╚═╝ ██║ ██████╔╝
+ ╚═════╝ ╚═╝     ╚═╝ ╚═════╝
+
+SYNTAX: CMD ["executable", "param1", "param2"]
+
+PURPOSE:
+  Defines the default command that will be executed when a container starts,
+  unless overridden at runtime.
+
+DETAILS:
+  • A Dockerfile can have only one CMD. If multiple exist, only the last one applies
+  • Can be overridden by providing command arguments when starting the container
+  • Provides default behavior for the container
+
+EXAMPLE:
+  CMD ["python", "app.py"]
+
+EXPLANATION:
+  This sets the default command to run "python app.py" when the container starts.
+  If you run "docker run image-name other-command", CMD will be ignored and
+  "other-command" will be executed instead.
+
+------------------------------------------------------------------------
+
+
+ ██████╗ ██████╗  ██████╗  ██╗   ██╗
+██╔════╝ ██╔══██╗ ██╔══██╗ ╚██╗ ██╔╝
+██║      ██║  ██║ ██████╔╝  ╚████╔╝
+██║      ██║  ██║ ██╔═══╝    ╚██╔╝
+╚██████╗ ██████╔╝ ██║         ██║
+ ╚═════╝ ╚═════╝  ╚═╝         ╚═╝
+
+SYNTAX: COPY <src> <dest>
+
+PURPOSE:
+  COPY is a Dockerfile instruction used to copy files or directories
+  from your host machine into the Docker image.
+
+DETAILS:
+  • Copies new files/directories from build context to the image
+  • Can use wildcards for source paths
+  • Preserves file metadata (permissions, etc.)
+
+EXAMPLE:
+  COPY ./app /app
+
+EXPLANATION:
+  This copies the local ./app directory into the /app directory in the image.
+  All files and subdirectories are copied as they exist on the host machine.
+
+------------------------------------------------------------------------
+
+███████╗███╗   ██╗████████╗██████╗ ██╗   ██╗██████╗  ██████╗ ██╗███╗   ██╗████████╗
+██╔════╝████╗  ██║╚══██╔══╝██╔══██╗╚██╗ ██╔╝██╔══██╗██╔═══██╗██║████╗  ██║╚══██╔══╝
+█████╗  ██╔██╗ ██║   ██║   ██████╔╝ ╚████╔╝ ██████╔╝██║   ██║██║██╔██╗ ██║   ██║   
+██╔══╝  ██║╚██╗██║   ██║   ██╔══██╗  ╚██╔╝  ██╔═══╝ ██║   ██║██║██║╚██╗██║   ██║   
+███████╗██║ ╚████║   ██║   ██║  ██║   ██║   ██║     ╚██████╔╝██║██║ ╚████║   ██║   
+╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ╚═╝╚═╝  ╚═══╝   ╚═╝   
+
+SYNTAX: ENTRYPOINT ["executable", "param1", "param2"]
+
+PURPOSE:
+  Sets the main command that always runs when the container starts.
+
+DETAILS:
+  • Unlike CMD, ENTRYPOINT can't be easily overridden
+  • Must use the --entrypoint flag to override it
+  • Defines the container's primary purpose
+
+EXAMPLE:
+  ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+EXPLANATION:
+  This sets the container to always run nginx with the given parameters.
+  To override: docker run --entrypoint <new_entrypoint> <image> [arguments]
+
+------------------------------------------------------------------------
+
+
+███████╗ ██╗  ██╗ ██████╗   ██████╗  ███████╗ ███████╗
+██╔════╝ ╚██╗██╔╝ ██╔══██╗ ██╔═══██╗ ██╔════╝ ██╔════╝
+█████╗    ╚███╔╝  ██████╔╝ ██║   ██║ ███████╗ █████╗
+██╔══╝    ██╔██╗  ██╔═══╝  ██║   ██║ ╚════██║ ██╔══╝
+███████╗ ██╔╝ ██╗ ██║      ╚██████╔╝ ███████║ ███████╗
+╚══════╝ ╚═╝  ╚═╝ ╚═╝       ╚═════╝  ╚══════╝ ╚══════╝
+
+SYNTAX: EXPOSE <port>[/<protocol>]
+
+PURPOSE:
+  Documents which ports the container will listen on at runtime.
+
+DETAILS:
+  • Does NOT actually publish the port
+  • Acts as documentation for container users
+  • Must still use -p or -P when running container to publish ports
+
+EXAMPLE:
+  EXPOSE 80/tcp
+
+EXPLANATION:
+  The EXPOSE instruction just tells the user: "Hey, this app uses this port."
+  It's just documentation for humans. You still need to map ports when running
+  the container with: docker run -p 8080:80 image-name
+
+------------------------------------------------------------------------
+
+
+
+			======================================
+			  DOCKERFILE BEST PRACTICES EXPLAINED
+			======================================
+
+• Chain RUN commands with && to reduce layers [lilmo3a9in](bzaaf dyal RUN = bzaaf dyal layers = size kbiir)
+   Explanation:
+   			Each "RUN" instruction in a Dockerfile creates a new layer in the Docker image.
+   			While Docker uses a layered filesystem for efficiency,
+   			having too many layers can increase the image size and make it slower to build and pull.
+   			By chaining multiple commands together with "&&" within a single "RUN" instruction,
+   			you execute them in a single shell session,
+   			resulting in only one new layer being created.
+   			This helps to keep the image size down and improves build performance.
+
+• Use specific tags for base images (FROM) rather than 'latest'
+   Explanation:
+   			Using "latest" as a tag for your base image (FROM ubuntu:latest) is problematic
+			because the "latest" tag is constantly updated and can point to different versions over time.
+   			This lack of specificity makes your builds not reproducible.
+   			If you build your image today with "latest", it might be different from an image built next week,
+   			potentially introducing unexpected bugs or compatibility issues.
+   			Using a specific tag (FROM ubuntu:22.04) ensures that your builds are consistent and reproducible across different times and environments.
+
+• Clean up after package installations to reduce image size
+   Explanation:
+   			When you install packages using commands like "apt install",
+			intermediate files, caches, and unnecessary dependencies are often downloaded and left behind.
+			These files contribute to the final image size.
+			To reduce the image size, it's crucial to clean up these artifacts within the same "RUN" instruction where the installation occurs.
+			For example, for "apt", you would typically add "rm -rf /var/lib/apt/lists/*" and clear out any temporary directories.
+			This minimizes the "disk space footprint" of your image.
+
+• Place frequently changing instructions later in the Dockerfile
+   	Explanation:
+			Docker builds images layer by layer and leverages caching.
+			When an instruction in the Dockerfile changes,
+			Docker invalidates the cache from that instruction onwards,
+			meaning all subsequent instructions need to be rebuilt.
+			By placing frequently changing instructions (copying application code) later in the Dockerfile,
+			you allow Docker to reuse cached layers for the more stable parts of your image (like installing system dependencies).
+			This significantly speeds up subsequent builds,
+			especially during development when application code changes often.
+
+• Use .dockerignore to exclude unnecessary files from the build context
+	Explanation:
+			When you build a Docker image,
+			Docker sends the entire contents of your build context (the directory where your Dockerfile resides) to the Docker daemon.
+			This can include unnecessary files like ".git" directories, "node_modules", temporary files, or local configuration files.
+			Sending these files increases the build context size,
+			which can slow down the build process and even lead to larger image sizes if they are accidentally copied into the image.
+			A ".dockerignore" file works similarly to ".gitignore",
+			allowing you to specify patterns for files and directories that should be excluded from the build context,
+			thereby optimizing the build process.

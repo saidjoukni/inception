@@ -1,0 +1,46 @@
+---------------------------------what is nginx config file-------------------------------------
+
+	The nginx.conf file is the main configuration file for the Nginx web server.
+	It controls how Nginx behaves like what content it serves, how it handles requests,
+	security, performance, reverse proxying, etc.
+
+------------------------------ URIs/URLs & Their Differences:-------------------------------------
+
+URI (Uniform Resource Identifier): A general term for anything that identifies a resource, like /index.php, mailto:someone@example.com, or a full web address.
+URL (Uniform Resource Locator): A type of URI that gives the full address to locate a resource, like https://example.com/index.php.
+Difference: All URLs are URIs, but not all URIs are URLs. In web servers, "URI" usually refers to the path part of the request (e.g., /index.php).
+[Lilmo3a9in]{ila ftardna 3endna wahed twichiya x : URI houa lwasf dial twichia, URL houa l3onwan kaaamel dial twichia, wa hada b7ad datou wasf (URI)}
+
+--------------------------------- nginx config file----------------------------------------
+
+We must add this Server block to the default NginX Config File, specifically in the http block.
+Each server block in Nginx acts as a virtual server, and responds to requests matching the criteria[Lilmo3a9in]{ma3ayiir} of that server block.
+		[Lilmo3a9in]{Koulla block kaywelli server w ay wa7ed jay mn dak l ip wlla port lli 3atini f dak server block haykhdemlou dak index wlla dakchi lli dayr nta f lblock}
+
+server {
+	listen 443 ssl;                                    --------------->	This tells NGINX to accept HTTPS connections on port 443
+	ssl_protocols TLSv1.2 TLSv1.3;                     --------------->	Only allow secure SSL/TLS protocols (versions 1.2 and 1.3)
+	ssl_certificate /etc/nginx/ssl/inception.crt;      --------------->	Path to the SSL certificate file (This is your public certificate that clients use to verify your server)
+	ssl_certificate_key /etc/nginx/ssl/inception.key;  --------------->	Path to the private key file (This is the private key used to decrypt SSL/TLS communications)
+	root /var/www/wordpress;                           --------------->	Specify Document root directory (Where NGINX will look for files to serve)
+	server_name UserName.42.fr;                        --------------->	Domain name. This server block responds to Requests for Username.42.fr and will be handled by this block
+	index index.php;                                   --------------->	Default files to look for when a directory is requested (NGINX will try these files in order when serving directory requests)
+	location / {                                       --------------->	Location block for handling requests to the root path (/)
+		try_files $uri $uri/ =404;                     ---------------> Try to serve the exact URI, then URI/, then show 404 error (This is the standard way to serve static files)
+	}
+	location ~ \.php$ {								   -\	 > See Explanation (*) below.
+		include snippets/fastcgi-php.conf;				|----> This part is to enable NginX to process PHP Files. It tells Nginx to pass those requests to the PHP-FPM service running in the Wordpress container on port 9000;
+		fastcgi_pass wordpress:9000;				    |    > It knows how to do this (fastcgi_pass) by including the fastcgi-php.conf file which tells Nginx how to handle PHP processing. 
+	}												   -/
+}
+
+* Explanation:
+This location block works the same as the previous one, but instead of just checking wether a file is in the root, it uses a 'regular expression match' (~):
+A regular expression match (regex) is used to check wether a text matches a specified pattern. [Lilmo3a9in]{b7al strcmp pro max} Example here is \.php$ :
+\.	: means a literal dot (.) Without the '\' the dot '.' will be considered like a 'Wildcard' that means 'Any Character' [Lilmo3a9in]{b7al fach kandirou \" fach kanbghiw nketbou " f9elb lcode}
+$	: means that the expression has to be at the end for it to be considered a match.
+So now the phrase becomes like : Does (~) the request end ($) with "(\).php" ?
+
+By the way, NGINX supports multiple server blocks, which allows you to host multiple websites on the same machine.
+This is called virtual hosting. Just duplicate the Server block and modify the criteria accordingly.
+This is not required in the Inception project.

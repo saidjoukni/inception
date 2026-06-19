@@ -1,0 +1,94 @@
+--------------------------------------- wpconfig.sh Script ----------------------------------------
+
+This is the script that will set up Wordpress and our website configuration automatically, using WP-CLI.
+
+----------------------------------- Step-by-Step Description: -------------------------------------
+
+#!/bin/bash
+	Script shebang
+
+while ! mariadb -h mariadb -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" 2>/dev/null; do
+    echo "Waiting for MariaDB Connection...";
+    sleep 2
+	This is a while loop. It will continue to loop (do) as long as the exit status of the command is not 0;
+	Here the command is : 
+		mariadb -h mariadb -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"
+	This command tries to connect to the mariadb ((-h)ost) server (with the (-u)sername and (-p)assword) to check if the server is ready.
+	We need the MySQL Database to be ready for our Wordpress configuration, so we wait until it is.
+
+done
+	End of the While loop
+
+echo "MariaDB Connection Successful!"
+
+echo "Creating WordPress Configuration..."
+
+# The Following commands are WP-CLI commands, ran with 'wp'
+# Notes :
+	--allow-root is for running the wp commands as a root user. This configuration requires root privileges.
+	--path='/var/www/wordpress' sets the working directory for the wp commands to the WordPress directory.
+
+wp config create --allow-root \						<== Generates a wp-config.php file 
+	--dbname=$MYSQL_DATABASE \						<== Sets the Database Name to the .env variable
+	--dbuser=$MYSQL_USER \							<== Sets the Database User to the .env variable
+	--dbpass=$MYSQL_PASSWORD \						<== Sets the Database Password to the .env variable
+	--dbhost=mariadb \								<== Sets the Database Hostname to the .env variable
+	--path='/var/www/wordpress'
+
+echo "Installing Core..."
+
+wp core install --allow-root \						<== Runs the WordPress installation process
+	--url="$DOMAIN_NAME" \							<== Sets the Address of the website to the .env variable
+	--title="$WP_TITLE" \							<== Sets the Title of the website to the .env variable
+	--admin_user="$WP_ADMIN_NAME" \					<== Sets the Admin Username to the .env variable
+	--admin_password="$WP_ADMIN_PASSWORD" \			<== Sets the Admin Password to the .env variable
+	--admin_email="$WP_ADMIN_MAIL" --skip-email \	<== Sets the Admin Mail to the .env variable, while skipping sending an e-mail notification
+	--path='/var/www/wordpress'
+
+echo "Creating User..."
+
+wp user create --allow-root \						<== Creates a new Wordpress user
+	"$WP_USER_NAME" "$WP_USER_MAIL" \				<== Sets the Username and e-Mail to the .env variables
+	--user_pass="$WP_USER_PASSWORD" \				<== Sets the User Password to the .env variables
+	--role=author 									<== Sets the User role* to Author
+	--path='/var/www/wordpress'
+
+echo "WordPress Configuration Completed!"
+
+echo "Starting PHP-FPM..."
+
+exec php-fpm7.4 -F							        <== Starts the PHP-FPM service in the (-F)oreground.
+
+# *Role Explanation:
+	Each Wordpress user has a specific role. These roles are :
+		1. Administrator
+			Full access to all site settings and features.
+			Can install, edit, and delete plugins and themes.
+			Can add, edit, and delete any posts, pages, and users (including other admins).
+			Can change site settings.
+		2. Editor
+			Can add, edit, publish, and delete any posts and pages (including those by other users).
+			Can moderate comments.
+			Cannot manage plugins, themes, or site settings.
+		3. Author
+			Can add, edit, publish, and delete their own posts.
+			Can upload files.
+			Cannot edit or delete posts by others.
+		4. Contributor
+			Can write and edit their own posts, but cannot publish them.
+			Cannot upload files.
+			Cannot edit or delete posts by others.
+		5. Subscriber
+			Can only manage their own profile.
+			Can comment on posts (if comments are enabled).
+			Cannot write posts or access admin features.
+
++---------------+---------------+--------------------+-----------------------+-------------------+--------------+--------------+
+|    Role       | Publish Posts | Edit Others' Posts | Manage Plugins/Themes | Moderate Comments | Upload Files | Manage Users |
++---------------+---------------+--------------------+-----------------------+-------------------+--------------+--------------+
+| Administrator |      ✔️       |         ✔️         |          ✔️          |         ✔️         |      ✔️      |     ✔️      |
+| Editor        |      ✔️       |         ✔️         |          ❌          |         ✔️         |      ✔️      |     ❌      |
+| Author        |      ✔️       |         ❌         |          ❌          |         ❌         |      ✔️      |     ❌      |
+| Contributor   |      ❌       |         ❌         |          ❌          |         ❌         |      ❌      |     ❌      |
+| Subscriber    |      ❌       |         ❌         |          ❌          |         ❌         |      ❌      |     ❌      |
++---------------+---------------+--------------------+-----------------------+-------------------+--------------+--------------+

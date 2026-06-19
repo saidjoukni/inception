@@ -1,0 +1,9 @@
+This is a Guide of my own making. It is a guide for the Inception project of the 42 Cursus.
+The original structure of the guide is a Guide.txt file, and four adjacent folders : 3 are one for each container and a forth for General Concepts. I joined them in one file so that you have all data in one place.
+Your job is to strictly turn this content into a usable, structured platform :
+Organize the content logically into structured pages or modules (based on the natural division of the text).
+Preserve all original text as-is in its exact location.
+Create navigation that follows the structure of the guide (e.g., Guide, Docker, nginx, etc.).
+Make each part accessible and clear without changing the meaning.
+This guide is meant to be a reference for a complex project, so clarity and structure are important — but fidelity to the original text is absolute priority.
+Start with the full guide overview, and then let it branch into its parts.

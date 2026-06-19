@@ -1,0 +1,13 @@
+# Security
+.env
+se
+# Git files
+.git
+.gitignore
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Markdown / Docs
+*.md
